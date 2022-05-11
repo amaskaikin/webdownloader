@@ -10,5 +10,9 @@ logging:
   level:
     com.tretton37.webdownloader: DEBUG
 webdownloader:
+  integration:
+    connection-timeout-ms: 10000
+    read-timeout-s: 60
+    write-timeout-s: 60
   base-url: "https://tretton37.com/"
   base-dir: "target/downloads"
