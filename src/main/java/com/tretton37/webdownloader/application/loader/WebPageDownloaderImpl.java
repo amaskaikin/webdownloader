@@ -65,6 +65,8 @@ public class WebPageDownloaderImpl implements WebPageDownloader {
             log.error("getTargetPath: Failed to create target directories: {}", e.getMessage());
             throw new RuntimeException(e);
         }
+
+        log.trace("getPath: Result path: {}", result);
         return result;
     }
 

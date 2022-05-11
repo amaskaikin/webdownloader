@@ -13,15 +13,15 @@ public class ExchangeLoggingFilterFunctions {
     public static ExchangeFilterFunction logRequest() {
         return ExchangeFilterFunction.ofRequestProcessor(request -> {
             if (log.isTraceEnabled()) {
-                log.info("Request: \n\turl={}\n\tmethod={}\n\t", request.url(), request.method());
+                log.trace("Request: \n\turl={}\n\tmethod={}\n\t", request.url(), request.method());
 
-                log.info("Headers: \n{}", request.headers().entrySet()
+                log.trace("Headers: \n{}", request.headers().entrySet()
                         .stream()
                         .map(entry -> entry.getKey() + "=" + entry.getValue())
                         .collect(Collectors.joining("\n ==> "))
                 );
 
-                log.info("Request: body={}", request.body());
+                log.trace("Request: body={}", request.body());
             } else if (log.isDebugEnabled()) {
                 log.debug("Request: \n\turl={}\n\tmethod={}\n\theaders={}",
                         request.url(), request.method(), request.headers().keySet());

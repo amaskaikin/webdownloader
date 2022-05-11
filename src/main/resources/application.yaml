@@ -1,8 +1,14 @@
 spring:
   main:
     web-application-type: none
+    banner-mode: "off"
 logging:
+  file.name: logs/app.log
+  pattern:
+    console:
+    file: "%d [%t] %-5level %logger{36} - %msg%n"
   level:
-    com.tretton37.webdownloader: INFO
+    com.tretton37.webdownloader: DEBUG
 webdownloader:
+  base-url: "https://tretton37.com/"
   base-dir: "target/downloads"
