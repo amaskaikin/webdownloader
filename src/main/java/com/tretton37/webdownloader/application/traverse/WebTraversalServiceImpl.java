@@ -22,12 +22,11 @@ import java.util.stream.Stream;
 public class WebTraversalServiceImpl implements WebTraversalService {
 
     @Override
-    public Set<URL> traverse() {
+    public Set<URL> traverse(String baseUrl) {
         final Set<String> visited = Collections.synchronizedSet(new HashSet<>());
-        // ToDo: register webservice somewhere else
-        Set<URL> result = retrieveSiteContent(visited, "https://tretton37.com/")
+        Set<URL> result = retrieveSiteContent(visited, baseUrl, baseUrl)
                 .parallel()
-                .map(e -> retrieveSiteContent(visited, e))
+                .map(e -> retrieveSiteContent(visited, baseUrl, e))
                 .reduce(Stream::concat).orElse(Stream.empty())
                 .map(url -> {
                     try {
@@ -39,17 +38,18 @@ public class WebTraversalServiceImpl implements WebTraversalService {
                 })
                 .collect(Collectors.toSet());
 
-        log.info("traverse: URLs to download count: {}", result.size());
-
+        log.info("traverse: Total URLs count: {}", result.size());
         return result;
     }
 
-    private Stream<String> retrieveSiteContent(final Set<String> visited, final String relativeUrl) {
-        // ToDo: improve synchronization
-        if (visited.contains(relativeUrl)) {
-            return Stream.empty();
+    private Stream<String> retrieveSiteContent(final Set<String> visited, final String baseUrl,
+                                               final String relativeUrl) {
+        synchronized (this) {
+            if (visited.contains(relativeUrl)) {
+                return Stream.empty();
+            }
+            visited.add(relativeUrl);
         }
-        visited.add(relativeUrl);
 
         try {
             Connection.Response jsoupResponse = Jsoup.connect(relativeUrl)
@@ -61,7 +61,8 @@ public class WebTraversalServiceImpl implements WebTraversalService {
             }
             Document document = jsoupResponse.parse();
 
-            return WebContentExtractor.fromDocument(document, "https://tretton37.com/")
+            log.trace("retrieveSiteContent: Extracting content of {}", relativeUrl);
+            return WebContentExtractor.fromDocument(document, baseUrl)
                     .links("a", "link")
                     .assets("img", "script", "video")
                     .extract();
@@ -69,6 +70,8 @@ public class WebTraversalServiceImpl implements WebTraversalService {
         }
         catch (IOException e) {
             // ToDo: Replace with custom exception
+            log.error("retrieveSiteContent: Error occurred while parsing {} page content: {}",
+                    relativeUrl, e.getMessage());
             throw new RuntimeException(e);
         }
     }

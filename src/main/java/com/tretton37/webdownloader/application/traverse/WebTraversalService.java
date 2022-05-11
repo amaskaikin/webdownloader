@@ -5,5 +5,5 @@ import java.util.Set;
 
 public interface WebTraversalService {
 
-    Set<URL> traverse();
+    Set<URL> traverse(String baseUrl);
 }
