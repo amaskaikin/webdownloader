@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.util.annotation.Nullable;
 
 import java.io.IOException;
@@ -41,12 +42,13 @@ public class WebPageDownloaderImpl implements WebPageDownloader {
     @Override
     public void downloadAsync(final Set<URL> urls, @Nullable final ProgressBar progressBar) {
         urls.parallelStream()
-                .map(url -> new PathBasedDataBufferFlux(
-                        clientProvider.getWebClient(url.toString())
+                .map(url -> {
+                        Flux<DataBuffer> flux = clientProvider.getWebClient(url.toString())
                                 .get()
                                 .retrieve()
-                                .bodyToFlux(DataBuffer.class),
-                        getPath(url))
+                                .bodyToFlux(DataBuffer.class);
+                        return createPathDataBufferFlux(flux, getPath(url));
+                    }
                 )
                 .forEach(dataBufferFlux -> dataBufferFlux.write()
                         .doOnSuccess(e -> {
@@ -55,6 +57,10 @@ public class WebPageDownloaderImpl implements WebPageDownloader {
                             }
                         })
                         .block());
+    }
+
+    protected PathBasedDataBufferFlux createPathDataBufferFlux(Flux<DataBuffer> flux, Path path) {
+        return new PathBasedDataBufferFlux(flux, path);
     }
 
     private Path getPath(URL url) {

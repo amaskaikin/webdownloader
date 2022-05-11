@@ -52,9 +52,7 @@ public class WebTraversalServiceImpl implements WebTraversalService {
         }
 
         try {
-            Connection.Response jsoupResponse = Jsoup.connect(relativeUrl)
-                    .ignoreContentType(Boolean.TRUE)
-                    .execute();
+            Connection.Response jsoupResponse = getJsoupConnection(relativeUrl).execute();
             if (!Objects.requireNonNull(jsoupResponse.contentType())
                     .contains(MediaType.TEXT_HTML.getType())) {
                 return Stream.empty();
@@ -73,5 +71,9 @@ public class WebTraversalServiceImpl implements WebTraversalService {
                     relativeUrl, e.getMessage());
             throw new RuntimeException(e);
         }
+    }
+
+    protected Connection getJsoupConnection(String url) {
+        return Jsoup.connect(url).ignoreContentType(Boolean.TRUE);
     }
 }
