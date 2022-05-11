@@ -69,7 +69,6 @@ public class WebTraversalServiceImpl implements WebTraversalService {
 
         }
         catch (IOException e) {
-            // ToDo: Replace with custom exception
             log.error("retrieveSiteContent: Error occurred while parsing {} page content: {}",
                     relativeUrl, e.getMessage());
             throw new RuntimeException(e);
